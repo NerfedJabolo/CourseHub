@@ -6,6 +6,7 @@ import {
   JWT_EXPIRES_IN,
   BCRYPT_SALT_ROUNDS,
 } from '../config/auth.js';
+import { serializeUser } from '../serializers/userSerializer.js';
 
 // POST /auth/register
 export async function register(req, res) {
@@ -23,12 +24,7 @@ export async function register(req, res) {
 
     const user = await User.create({ name, email, passwordHash, role });
 
-    res.status(201).json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
+    res.status(201).json({ data: serializeUser(user) });
   } catch (err) {
     console.error(err);
     res

@@ -1,6 +1,5 @@
 import express from 'express';
 import routes from './routes/index.js';
-import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 

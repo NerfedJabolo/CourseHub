@@ -7,19 +7,32 @@ import {
   updateCourse,
   deleteCourse,
 } from '../controllers/courseController.js';
+import { validate } from '../middleware/validate.js';
+import {
+  createCourseSchema,
+  updateCourseSchema,
+} from '../validators/courseValidator.js';
 
 const router = express.Router();
 
-// Anyone logged in can read courses
 router.get('/', authenticate, getCourses);
 
-// Only teacher/admin can create
-router.post('/', authenticate, authorize('teacher', 'admin'), createCourse);
+router.post(
+  '/',
+  authenticate,
+  authorize('teacher', 'admin'),
+  validate(createCourseSchema),
+  createCourse
+);
 
-// Update course: admin or owner
-router.put('/:id', authenticate, authorize('teacher', 'admin'), updateCourse);
+router.put(
+  '/:id',
+  authenticate,
+  authorize('teacher', 'admin'),
+  validate(updateCourseSchema),
+  updateCourse
+);
 
-// Delete course: admin or owner
 router.delete(
   '/:id',
   authenticate,

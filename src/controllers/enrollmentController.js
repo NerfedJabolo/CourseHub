@@ -5,6 +5,7 @@ import {
   approve as enrollmentApprove,
   reject as enrollmentReject,
 } from '../core/enrollment.js';
+import { serializeEnrollment } from '../serializers/enrollmentSerializer.js';
 
 /**
  * POST /courses/:id/enroll
@@ -58,7 +59,7 @@ export async function enrollInCourse(req, res) {
       });
     }
 
-    return res.status(201).json({ data: enrollment });
+    return res.status(201).json({ data: serializeEnrollment(enrollment) });
   } catch (err) {
     console.error(err);
     return res.status(500).json({

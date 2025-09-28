@@ -5,6 +5,8 @@ import {
   enrollInCourse,
   updateEnrollment,
 } from '../controllers/enrollmentController.js';
+import { validate } from '../middleware/validate.js';
+import { updateEnrollmentSchema } from '../validators/enrollmentValidator.js';
 
 const router = express.Router();
 
@@ -21,6 +23,7 @@ router.put(
   '/:id',
   authenticate,
   authorize('student', 'teacher', 'admin'),
+  validate(updateEnrollmentSchema),
   updateEnrollment
 );
 

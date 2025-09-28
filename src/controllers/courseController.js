@@ -1,6 +1,7 @@
 import { Course, User, Enrollment } from '../models/index.js';
 import { Op } from 'sequelize';
 import { applyDeletePolicy, canEdit } from '../core/course.js';
+import { serializeCourse } from '../serializers/courseSerializer.js';
 
 // GET /courses?query params
 export async function getCourses(req, res) {
@@ -38,7 +39,7 @@ export async function getCourses(req, res) {
       total: courses.count,
       page: parseInt(page),
       limit: parseInt(limit),
-      data: courses.rows,
+      data: courses.rows.map(serializeCourse),
     });
   } catch (err) {
     console.error(err);
