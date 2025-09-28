@@ -11,13 +11,30 @@ module.exports = (sequelize) => {
   }
   Enrollment.init(
     {
-      courseId: DataTypes.INTEGER,
-      studentId: DataTypes.INTEGER,
-      status: DataTypes.ENUM('pending', 'approved', 'cancelled'),
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      courseId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      studentId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM('pending', 'approved', 'cancelled'),
+        allowNull: false,
+        defaultValue: 'pending',
+      },
     },
     {
       sequelize,
       modelName: 'Enrollment',
+      tableName: 'Enrollments',
+      timestamps: true,
     }
   );
   return Enrollment;
