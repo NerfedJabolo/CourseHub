@@ -1,5 +1,6 @@
 import { Course, User, Enrollment } from '../models/index.js';
 import { Op } from 'sequelize';
+import { applyDeletePolicy, canEdit } from '../core/course.js';
 
 // GET /courses?query params
 export async function getCourses(req, res) {
@@ -87,59 +88,44 @@ export async function createCourse(req, res) {
 
 // PUT /courses/:id
 export async function updateCourse(req, res) {
-  try {
-    const course = await Course.findByPk(req.params.id);
-    if (!course)
-      return res
-        .status(404)
-        .json({ error: { code: 'NOT_FOUND', message: 'Course not found' } });
+  const course = await Course.findByPk(req.params.id);
+  if (!course)
+    return res
+      .status(404)
+      .json({ error: { code: 'NOT_FOUND', message: 'Course not found' } });
 
-    // Only admin or owning teacher can update
-    if (req.user.role !== 'admin' && req.user.id !== course.teacherId) {
-      return res
-        .status(403)
-        .json({ error: { code: 'FORBIDDEN', message: 'Not authorized' } });
-    }
-
-    const updates = req.body;
-    await course.update(updates);
-
-    res.json(course);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({
+  if (!canEdit(course, req.user)) {
+    return res.status(403).json({
       error: {
-        code: 'UPDATE_COURSE_FAILED',
-        message: 'Failed to update course',
+        code: 'FORBIDDEN',
+        message: 'Not authorized to edit this course',
       },
     });
   }
+
+  await course.update(req.body);
+  res.json(course);
 }
 
 // DELETE /courses/:id
 export async function deleteCourse(req, res) {
   try {
     const course = await Course.findByPk(req.params.id, {
-      include: [{ model: Enrollment, as: 'enrollmentsList' }],
+      include: ['enrollmentsList'],
     });
     if (!course)
       return res
         .status(404)
         .json({ error: { code: 'NOT_FOUND', message: 'Course not found' } });
 
-    // Only admin or owning teacher can delete
     if (req.user.role !== 'admin' && req.user.id !== course.teacherId) {
       return res
         .status(403)
         .json({ error: { code: 'FORBIDDEN', message: 'Not authorized' } });
     }
 
-    // Transaction: mark enrollments cancelled instead of deleting
     await course.sequelize.transaction(async (t) => {
-      await Enrollment.update(
-        { status: 'cancelled' },
-        { where: { courseId: course.id }, transaction: t }
-      );
+      await applyDeletePolicy(course, t);
       await course.destroy({ transaction: t });
     });
 
