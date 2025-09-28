@@ -1,10 +1,12 @@
 import express from 'express';
 import authRoutes from './authRoutes.js';
+import courseRoutes from './courseRoutes.js';
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
+router.use('/courses', courseRoutes);
 
-// TODO: add /courses and /enrollments routes here
+// TODO: add /enrollments routes here
 
 export default router;
