@@ -1,6 +1,6 @@
-'use strict';
-const { Model, DataTypes } = require('sequelize');
-module.exports = (sequelize) => {
+import { Model, DataTypes } from 'sequelize';
+
+export default (sequelize) => {
   class Course extends Model {
     static associate(models) {
       if (this.associations) return;
@@ -10,6 +10,42 @@ module.exports = (sequelize) => {
         foreignKey: 'courseId',
         as: 'enrollments',
       });
+    }
+    async canEnroll(student) {
+      if (this.status !== 'active') return false;
+
+      const { Enrollment } = this.sequelize.models;
+
+      // Check capacity
+      if (this.capacity !== null && this.capacity !== undefined) {
+        const approvedCount = await Enrollment.count({
+          where: { courseId: this.id, status: 'approved' },
+        });
+        if (approvedCount >= this.capacity) return false;
+      }
+
+      // Check if this student is already enrolled
+      if (student) {
+        const alreadyEnrolled = await Enrollment.findOne({
+          where: {
+            courseId: this.id,
+            studentId: student.id,
+            status: 'approved',
+          },
+        });
+        if (alreadyEnrolled) return false;
+      }
+
+      return true;
+    }
+
+    async applyDeletePolicy() {
+      if (!this.Enrollments)
+        await this.reload({ include: ['enrollmentsList'] });
+      for (const e of this.enrollmentsList) {
+        e.status = 'cancelled';
+        await e.save();
+      }
     }
   }
   Course.init(

@@ -1,6 +1,7 @@
-'use strict';
-const { Model, DataTypes } = require('sequelize');
-module.exports = (sequelize) => {
+import { Model, DataTypes } from 'sequelize';
+import jwt from 'jsonwebtoken';
+
+export default (sequelize) => {
   class User extends Model {
     static associate(models) {
       if (this.associations) return;
@@ -12,6 +13,13 @@ module.exports = (sequelize) => {
       });
     }
   }
+  User.prototype.generateJWT = function () {
+    return jwt.sign(
+      { id: this.id, role: this.role },
+      process.env.JWT_SECRET || 'testsecret',
+      { expiresIn: '1h' }
+    );
+  };
   User.init(
     {
       name: {

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   development: {
     username: 'coursehub_user',
     password: 'secret123',

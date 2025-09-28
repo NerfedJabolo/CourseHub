@@ -1,20 +1,27 @@
 // src/models/index.js
 import { Sequelize } from 'sequelize';
-import config from '../config/database.js';
 import UserModel from './user.js';
 import CourseModel from './course.js';
 import EnrollmentModel from './enrollment.js';
 
 const env = process.env.NODE_ENV || 'development';
-const dbConfig = config[env];
 
 // Initialize Sequelize
 const sequelize =
-  env === 'production'
-    ? new Sequelize(dbConfig.url, { dialect: 'postgres', logging: false })
-    : new Sequelize(dbConfig.database, dbConfig.username, dbConfig.password, {
-        host: dbConfig.host,
-        dialect: dbConfig.dialect,
+  env === 'development'
+    ? new Sequelize(
+        process.env.DB_NAME,
+        process.env.DB_USER,
+        process.env.DB_PASSWORD,
+        {
+          host: process.env.DB_HOST || 'localhost',
+          dialect: 'postgres', // or mysql, sqlite, etc.
+          logging: console.log, // enable logging in dev
+        }
+      )
+    : new Sequelize({
+        dialect: 'sqlite',
+        storage: ':memory:',
         logging: false,
       });
 

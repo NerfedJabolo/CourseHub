@@ -1,6 +1,6 @@
-'use strict';
-const { Model, DataTypes } = require('sequelize');
-module.exports = (sequelize) => {
+import { Model, DataTypes } from 'sequelize';
+
+export default (sequelize) => {
   class Enrollment extends Model {
     static associate(models) {
       if (this.associations) return;
